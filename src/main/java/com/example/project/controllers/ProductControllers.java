@@ -4,6 +4,8 @@ import com.example.project.dtos.CreateProductDto;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.exceptions.BusinessProfileNotFoundException;
+import com.example.project.exceptions.GlobalExceptionHandler;
+import com.example.project.exceptions.ProductAlreadyExistsException;
 import com.example.project.services.ProductServices;
 import com.example.project.utils.GetAuthenticatedUser;
 import org.springframework.http.HttpStatus;
@@ -19,9 +21,14 @@ import java.util.Optional;
 public class ProductControllers {
 
     private final ProductServices productServices;
+    private final GlobalExceptionHandler globalExceptionHandler;
 
-    public ProductControllers(ProductServices productServices) {
+    public ProductControllers(
+            ProductServices productServices,
+            GlobalExceptionHandler globalExceptionHandler
+    ) {
         this.productServices = productServices;
+        this.globalExceptionHandler = globalExceptionHandler;
     }
 
     @PostMapping
@@ -32,10 +39,11 @@ public class ProductControllers {
             ProductEntity product = productServices.createProduct(currentUser, createProductDto);
             return new ResponseEntity<>(product, HttpStatus.CREATED);
         }catch (BusinessProfileNotFoundException e){
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
+            return globalExceptionHandler.handleBusinessProfileNotFoundException(e);
+        }catch (ProductAlreadyExistsException e){
+            return globalExceptionHandler.handleProductAlreadyExistsException(e);
+        }catch (Exception e) {
+            return globalExceptionHandler.handleGenericExceptions(e);
         }
     }
 
@@ -47,7 +55,7 @@ public class ProductControllers {
             List<Optional<ProductEntity>> allProducts = productServices.findAllProductForUser(currentUser);
             return new ResponseEntity<>(allProducts, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return globalExceptionHandler.handleGenericExceptions(e);
         }
     }
 

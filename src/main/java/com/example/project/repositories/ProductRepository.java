@@ -11,4 +11,5 @@ import java.util.Optional;
 @Repository
 public interface ProductRepository extends CrudRepository<ProductEntity, String> {
     List<Optional<ProductEntity>> findAllByBusinessProfile(BusinessProfileEntity businessProfile);
+    Optional<ProductEntity> findByNameAndBusinessProfile(String name, BusinessProfileEntity businessProfile);
 }

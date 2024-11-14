@@ -6,6 +6,7 @@ import com.example.project.entities.RoleEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.enums.RoleEnum;
 import com.example.project.exceptions.RoleNotFoundException;
+import com.example.project.exceptions.UserAlreadyExistsException;
 import com.example.project.exceptions.UserNotFoundException;
 import com.example.project.repositories.RoleRepository;
 import com.example.project.repositories.UserRepository;
@@ -45,6 +46,8 @@ public class AuthServices {
 
 
     public UserEntity registerUserService(RegisterUserDto registerUserDto){
+//        TODO: CHECK IF USER ALREADY EXISTS, THROWS EXCEPTION
+        UserEntity isUserExists = userRepository.findByEmail(registerUserDto.getEmail()).orElseThrow(() -> new UserAlreadyExistsException("USER ALREADY EXISTS PLEASE LOGIN"));
         logger.info("Registering user with email: {}", registerUserDto.getEmail());
         RoleEntity role = roleRepository.findByName(RoleEnum.valueOf(registerUserDto.getRole())).orElseThrow(() -> new RoleNotFoundException(registerUserDto.getRole()));
         logger.debug("Role '{}' found for user registration.", role.getName());
@@ -60,6 +63,7 @@ public class AuthServices {
     }
 
     public LoginResponseDto loginUserService(LoginUserDto loginUserDto){
+//        TODO: CHECK IF USER EXISTS OR NOT, IF NOT THEN THROW EXCEPTION
         logger.info("Attempting to login user with email: {}", loginUserDto.getEmail());
         UserEntity authenticatedUser = authenticateUser(loginUserDto);
         String jwtToken = jwtService.generateToken(authenticatedUser);

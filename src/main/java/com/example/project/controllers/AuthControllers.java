@@ -3,7 +3,9 @@ import com.example.project.dtos.LoginResponseDto;
 import com.example.project.dtos.LoginUserDto;
 import com.example.project.dtos.RegisterUserDto;
 import com.example.project.entities.UserEntity;
+import com.example.project.exceptions.GlobalExceptionHandler;
 import com.example.project.exceptions.RoleNotFoundException;
+import com.example.project.exceptions.UserAlreadyExistsException;
 import com.example.project.services.AuthServices;
 import com.example.project.utils.GlobalLogger;
 import org.slf4j.Logger;
@@ -20,9 +22,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthControllers {
     private static final Logger logger = GlobalLogger.getLogger(AuthControllers.class);
     private final AuthServices authServices;
+    private final GlobalExceptionHandler globalExceptionHandler;
 
-    public AuthControllers(AuthServices authServices) {
+    public AuthControllers(
+            AuthServices authServices,
+            GlobalExceptionHandler globalExceptionHandler
+    ) {
         this.authServices = authServices;
+        this.globalExceptionHandler = globalExceptionHandler;
     }
 
     @PostMapping("/signup")
@@ -33,11 +40,13 @@ public class AuthControllers {
             logger.info("User registered successfully with email: {}", registeredUser.getEmail());
             return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
         }catch (RoleNotFoundException ex){
-            return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return globalExceptionHandler.handleRoleNotFoundException(ex);
+        }catch (UserAlreadyExistsException ex){
+            return globalExceptionHandler.handleUserAlreadyException(ex);
         }
         catch (Exception e) {
             logger.error("Registration failed for user with email {}: {}", registerUserDto.getEmail(), e.getMessage(), e);
-            return ResponseEntity.status(500).body("An unexpected error occurred during registration");
+            return globalExceptionHandler.handleGenericExceptions(e);
         }
     }
 

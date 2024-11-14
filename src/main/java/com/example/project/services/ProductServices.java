@@ -6,6 +6,7 @@ import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.enums.ProductStatusEnum;
 import com.example.project.exceptions.BusinessProfileNotFoundException;
+import com.example.project.exceptions.ProductAlreadyExistsException;
 import com.example.project.repositories.BusinessProfileRepository;
 import com.example.project.repositories.ProductRepository;
 import com.example.project.utils.GlobalLogger;
@@ -32,7 +33,12 @@ public class ProductServices {
 
     public ProductEntity createProduct(UserEntity user, CreateProductDto createProductDto){
 //        TODO: FIND THE BUSINESS PROFILE BECAUSE IT IS LINKED WITH PRODUCTS
+//        TODO: CHECK IF THE PRODUCT WITH SAME NAME ALREADY EXISTS, WITH SAME BUSINESS PROFILE
         BusinessProfileEntity businessProfile = findBusinessProfile(user);
+        ProductEntity isProductExists = productRepository.findByNameAndBusinessProfile(createProductDto.getName(), businessProfile).orElse(null);
+        if(isProductExists != null){
+            throw new ProductAlreadyExistsException("PRODUCT ALREADY EXISTS IN YOUR PROFILE");
+        }
         logger.info("Attempting to create product");
         ProductEntity newProduct = new ProductEntity();
 //        TODO: CREATE NEW PRODUCT
