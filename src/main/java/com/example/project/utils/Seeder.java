@@ -1,7 +1,9 @@
 package com.example.project.utils;
 
+import com.example.project.entities.BusinessProfileEntity;
 import com.example.project.entities.RoleEntity;
 import com.example.project.entities.UserEntity;
+import com.example.project.enums.BusinessStatus;
 import com.example.project.enums.RoleEnum;
 import com.example.project.repositories.BusinessProfileRepository;
 import com.example.project.repositories.ProductRepository;
@@ -43,6 +45,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
     public void onApplicationEvent(ContextRefreshedEvent event) {
         this.loadRoles();
         this.loadUsers();
+        this.loadBusinessProfile();
     }
 
     private void loadUsers(){
@@ -75,6 +78,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
                 userRepository.findByEmail(user2.getEmail()).orElse(null) == null &&
                 userRepository.findByEmail(user3.getEmail()).orElse(null) == null
         ){
+            System.out.println("USER NOT FOUND SO CREATE");
 
             userRepository.save(user1);
             userRepository.save(user2);
@@ -104,6 +108,27 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     private void loadBusinessProfile(){
-        
+        UserEntity finduser = userRepository.findByEmail("jainam@gmail.com").orElse(null);
+        if(finduser == null){
+            System.out.println("USER NOT FOUND");
+        }
+        if(businessProfileRepository.findByUser(finduser).orElse(null) == null){
+            BusinessProfileEntity businessProfile = new BusinessProfileEntity();
+            businessProfile.setBusinessName("TechGizmos");
+            businessProfile.setBusinessType("Electronics Retailer");
+            businessProfile.setRegistrationNumber("TG123456789");
+            businessProfile.setTaxIdNumber("TG-987654321");
+            businessProfile.setBusinessEmail("contact@techgizmos.com");
+            businessProfile.setBusinessPhone("+1-800-123-4567");
+            businessProfile.setBusinessAddress("123 Tech Street, Silicon Valley, CA");
+            businessProfile.setBusinessWebsite("website");
+            businessProfile.setBusinessFacebook("facebook");
+            businessProfile.setBusinessInstagram("instagram");
+            businessProfile.setBusinessLogo("logo");
+            businessProfile.setStatus(BusinessStatus.valueOf("ACTIVE"));
+            businessProfile.setUser(finduser);
+            businessProfileRepository.save(businessProfile);
+        }
+
     }
 }

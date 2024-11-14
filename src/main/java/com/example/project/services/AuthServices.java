@@ -6,8 +6,7 @@ import com.example.project.entities.RoleEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.enums.RoleEnum;
 import com.example.project.exceptions.RoleNotFoundException;
-import com.example.project.exceptions.UserAlreadyExistsException;
-import com.example.project.exceptions.UserNotFoundException;
+import com.example.project.exceptions.UserExceptions;
 import com.example.project.repositories.RoleRepository;
 import com.example.project.repositories.UserRepository;
 import com.example.project.utils.GlobalLogger;
@@ -17,7 +16,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.util.EnumUtils;
 
 @Service
 public class AuthServices {
@@ -45,9 +43,14 @@ public class AuthServices {
     }
 
 
+//    --> USER CAN REGISTER WITH EMAIL AND PASSWORD
+//    --> IF USER ALREADY EXISTS THEN TELL TO LOGIN
     public UserEntity registerUserService(RegisterUserDto registerUserDto){
 //        TODO: CHECK IF USER ALREADY EXISTS, THROWS EXCEPTION
-        UserEntity isUserExists = userRepository.findByEmail(registerUserDto.getEmail()).orElseThrow(() -> new UserAlreadyExistsException("USER ALREADY EXISTS PLEASE LOGIN"));
+        UserEntity isUserExists = userRepository.findByEmail(registerUserDto.getEmail()).orElse(null);
+        if(isUserExists != null){
+            throw new UserExceptions("USER ALREADY EXISTS PLEASE LOGIN");
+        }
         logger.info("Registering user with email: {}", registerUserDto.getEmail());
         RoleEntity role = roleRepository.findByName(RoleEnum.valueOf(registerUserDto.getRole())).orElseThrow(() -> new RoleNotFoundException(registerUserDto.getRole()));
         logger.debug("Role '{}' found for user registration.", role.getName());
@@ -81,7 +84,10 @@ public class AuthServices {
                         loginUserDto.getPassword()
                 )
         );
-        UserEntity user =  userRepository.findByEmail(loginUserDto.getEmail()).orElseThrow(() -> new UserNotFoundException(loginUserDto.getEmail()));
+        UserEntity user =  userRepository.findByEmail(loginUserDto.getEmail()).orElse(null);
+        if(user == null){
+            throw new UserExceptions("EMAIL NOT EXISTS PLEASE REGISTER");
+        }
         logger.debug("User authenticated successfully with email: {}", user.getEmail());
         return user;
     }

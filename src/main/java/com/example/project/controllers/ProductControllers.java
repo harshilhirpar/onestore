@@ -3,9 +3,9 @@ package com.example.project.controllers;
 import com.example.project.dtos.CreateProductDto;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
-import com.example.project.exceptions.BusinessProfileNotFoundException;
+import com.example.project.exceptions.BusinessProfileExceptions;
 import com.example.project.exceptions.GlobalExceptionHandler;
-import com.example.project.exceptions.ProductAlreadyExistsException;
+import com.example.project.exceptions.ProductExceptions;
 import com.example.project.services.ProductServices;
 import com.example.project.utils.GetAuthenticatedUser;
 import org.springframework.http.HttpStatus;
@@ -33,25 +33,25 @@ public class ProductControllers {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('BUSINESS')")
-    public ResponseEntity<?> createOrUpdateProduct(@RequestBody CreateProductDto createProductDto){
+    public ResponseEntity<?> createOrUpdateProduct(@RequestBody CreateProductDto createProductDto) {
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
-        try{
+        try {
             ProductEntity product = productServices.createProduct(currentUser, createProductDto);
             return new ResponseEntity<>(product, HttpStatus.CREATED);
-        }catch (BusinessProfileNotFoundException e){
+        } catch (BusinessProfileExceptions e) {
             return globalExceptionHandler.handleBusinessProfileNotFoundException(e);
-        }catch (ProductAlreadyExistsException e){
+        } catch (ProductExceptions e) {
             return globalExceptionHandler.handleProductAlreadyExistsException(e);
-        }catch (Exception e) {
+        } catch (Exception e) {
             return globalExceptionHandler.handleGenericExceptions(e);
         }
     }
 
     @GetMapping
     @PreAuthorize("hasAnyRole('BUSINESS')")
-    public ResponseEntity<?> getAllUserProducts(){
+    public ResponseEntity<?> getAllUserProducts() {
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
-        try{
+        try {
             List<Optional<ProductEntity>> allProducts = productServices.findAllProductForUser(currentUser);
             return new ResponseEntity<>(allProducts, HttpStatus.OK);
         } catch (Exception e) {
@@ -61,26 +61,60 @@ public class ProductControllers {
 
     @GetMapping("/{productId}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
-    public ResponseEntity<?> getProductById(@PathVariable String productId){
-        return new ResponseEntity<>("ONE", HttpStatus.OK);
+    public ResponseEntity<?> getProductById(@PathVariable String productId) {
+        try {
+            ProductEntity product = productServices.findProductById(productId);
+            return new ResponseEntity<>(product, HttpStatus.OK);
+        } catch (ProductExceptions e) {
+            return globalExceptionHandler.handleProductNotFound(e);
+        } catch (Exception e) {
+            return globalExceptionHandler.handleGenericExceptions(e);
+        }
+
     }
 
-    @DeleteMapping("/{productId}")
+    @DeleteMapping("/delete/{productId}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
-    public ResponseEntity<?> deleteProductById(@PathVariable String productId){
-        return new ResponseEntity<>("DELETED", HttpStatus.OK);
+    public ResponseEntity<?> deleteProductById(@PathVariable String productId) {
+        try{
+            String isDeleted = productServices.deleteProductById(productId);
+            return new ResponseEntity<>(isDeleted, HttpStatus.OK);
+        }catch (ProductExceptions ex){
+            return globalExceptionHandler.handleProductNotFound(ex);
+        } catch (Exception e) {
+            return globalExceptionHandler.handleGenericExceptions(e);
+        }
     }
 
     @GetMapping("/count")
-    @PreAuthorize("hasAnyRole('BUSINESS)")
-    public ResponseEntity<?> getAllProductCountForBusiness(){
-        return new ResponseEntity<>("COUNT", HttpStatus.OK);
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> getAllProductCountForBusiness() {
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            Integer productCount = productServices.getCountOfAllProductsForBusinessProfile(currentUser);
+            return new ResponseEntity<>(productCount, HttpStatus.OK);
+        }catch (Exception ex){
+            return globalExceptionHandler.handleGenericExceptions(ex);
+        }
     }
 
-    @GetMapping("/status/{productStatus}")
-    @PreAuthorize("hasAnyRole('BUSINESS)")
-    public ResponseEntity<?> getAllProductForUserBasedOnStatus(@PathVariable String productStatus){
-        return new ResponseEntity<>("ALL PRODUCTS", HttpStatus.OK);
+//    @GetMapping("/status/{productStatus}")
+    @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> getAllProductForUserBasedOnStatus(@PathVariable String status) {
+        System.out.println("START");
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            System.out.println("HERE");
+            List<?> products = productServices.getListOfProductFromStatus(currentUser, status);
+//            TODO: PROVIDE A RESPONSE IF 0 PRODUCTS ARE AVAILABLE
+            if(products.isEmpty()){
+                return new ResponseEntity<>("SORRY, NO PRODUCTS FOUND", HttpStatus.OK);
+            }
+            return new ResponseEntity<>(products, HttpStatus.FOUND);
+        }catch (Exception ex){
+            return globalExceptionHandler.handleGenericExceptions(ex);
+        }
     }
 
 //    TODO: IMPLEMENT SEARCH
