@@ -8,11 +8,15 @@ import com.example.project.enums.ProductStatusEnum;
 import com.example.project.exceptions.BusinessProfileExceptions;
 import com.example.project.exceptions.ProductExceptions;
 import com.example.project.repositories.BusinessProfileRepository;
+import com.example.project.repositories.ProductJpaRepository;
+import com.example.project.repositories.ProductPagingRepository;
 import com.example.project.repositories.ProductRepository;
 import com.example.project.utils.GlobalLogger;
 import org.slf4j.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -22,15 +26,22 @@ public class ProductServices {
 
     private final ProductRepository productRepository;
     private final BusinessProfileRepository businessProfileRepository;
+    private final ProductJpaRepository productJpaRepository;
+    private final ProductPagingRepository productPagingRepository;
     private static final Logger logger = GlobalLogger.getLogger(ProductServices.class);
 
     public ProductServices(
             ProductRepository productRepository,
-            BusinessProfileRepository businessProfileRepository
+            BusinessProfileRepository businessProfileRepository,
+            ProductJpaRepository productJpaRepository,
+            ProductPagingRepository productPagingRepository
     ) {
         this.productRepository = productRepository;
         this.businessProfileRepository = businessProfileRepository;
+        this.productJpaRepository = productJpaRepository;
+        this.productPagingRepository = productPagingRepository;
     }
+    private final String UPLOAD_DIRECTORY = "uploads/";
 
     public ProductEntity createProduct(UserEntity user, CreateProductDto createProductDto){
 //        TODO: FIND THE BUSINESS PROFILE BECAUSE IT IS LINKED WITH PRODUCTS
@@ -121,5 +132,17 @@ public class ProductServices {
             }
         }
         return productWithSameStatus;
+    }
+
+    public List<ProductEntity> searchProducts(String keyword, String category, Double minPrice, Double maxPrice){
+        logger.info("Searching Products");
+        return productJpaRepository.searchProducts(keyword, category, minPrice, maxPrice);
+    }
+
+    public List<ProductEntity> getPaginatedProducts(int page, int size){
+        logger.info("Fetching paginated products");
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductEntity> paginatedProducts = productPagingRepository.findAll(pageable);
+        return paginatedProducts.getContent();
     }
 }

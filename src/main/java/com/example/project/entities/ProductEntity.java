@@ -9,7 +9,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -35,7 +37,7 @@ public class ProductEntity {
     private String description;
 
     @Column(nullable = false)
-    private BigDecimal price;
+    private Double price;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -46,6 +48,13 @@ public class ProductEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductStatusEnum status;
+
+    @Column(nullable = true)
+    private String thumbnail;
+
+    @ElementCollection
+    @Column(nullable = true)
+    private List<String> supportingImages = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

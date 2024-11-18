@@ -64,7 +64,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
         UserEntity user2 = new UserEntity();
         user2.setFirstName("Jainam");
         user2.setLastName("Patel");
-        user2.setEmail("jainam@gamil.com");
+        user2.setEmail("jainam@gmail.com");
         user2.setPassword(passwordEncoder.encode("123"));
         user2.setRole(businessRole);
 

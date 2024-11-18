@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -76,10 +77,10 @@ public class ProductControllers {
     @DeleteMapping("/delete/{productId}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> deleteProductById(@PathVariable String productId) {
-        try{
+        try {
             String isDeleted = productServices.deleteProductById(productId);
             return new ResponseEntity<>(isDeleted, HttpStatus.OK);
-        }catch (ProductExceptions ex){
+        } catch (ProductExceptions ex) {
             return globalExceptionHandler.handleProductNotFound(ex);
         } catch (Exception e) {
             return globalExceptionHandler.handleGenericExceptions(e);
@@ -90,33 +91,62 @@ public class ProductControllers {
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> getAllProductCountForBusiness() {
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
-        try{
+        try {
             Integer productCount = productServices.getCountOfAllProductsForBusinessProfile(currentUser);
             return new ResponseEntity<>(productCount, HttpStatus.OK);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return globalExceptionHandler.handleGenericExceptions(ex);
         }
     }
 
-//    @GetMapping("/status/{productStatus}")
+    //    @GetMapping("/status/{productStatus}")
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> getAllProductForUserBasedOnStatus(@PathVariable String status) {
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
-        try{
+        try {
             List<?> products = productServices.getListOfProductFromStatus(currentUser, status);
 //            TODO: PROVIDE A RESPONSE IF 0 PRODUCTS ARE AVAILABLE
-            if(products.isEmpty()){
+            if (products.isEmpty()) {
                 return new ResponseEntity<>("SORRY, NO PRODUCTS FOUND", HttpStatus.OK);
             }
             return new ResponseEntity<>(products, HttpStatus.FOUND);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             return globalExceptionHandler.handleGenericExceptions(ex);
         }
     }
 
-//    TODO: IMPLEMENT SEARCH
-//    TODO: IMPLEMENT PAGINATION
-//    TODO: IMPLEMENT PRODUCT IMAGE UPLOAD
-//    TODO: IMPLEMENT PRODUCT IMAGES FOR ANOTHER SECTION UPLOAD
+    //    TODO: IMPLEMENT PAGINATION
+    @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('BUSINESS', 'ADMIN', 'CUSTOMER')")
+    public ResponseEntity<?> searchProducts(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice) {
+        System.out.println("dnsvsjkdnvfnahfdnvdsfhjvfdnviufnvijf");
+        List<ProductEntity> products = productServices.searchProducts(keyword, category, minPrice, maxPrice);
+        return new ResponseEntity<>(products, HttpStatus.OK);
+    }
+
+    @GetMapping("/paginated")
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> getPaginatedProducts(@RequestParam int page, @RequestParam int size) {
+        List<ProductEntity> paginatedProducts = productServices.getPaginatedProducts(page, size);
+        return new ResponseEntity<>(paginatedProducts, HttpStatus.OK);
+    }
+
+//    TODO: THUMBNAIL IMAGE UPLOAD
+    @PostMapping("/thumbnail/{productId}")
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> uploadThumbnail(@PathVariable String productId, @RequestParam("image") MultipartFile file){
+
+    }
+
+    //    TODO: SUPPORT IMAGES UPLOAD
+    @PostMapping("/thumbnail/{productId}")
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> uploadMultipleImages(@PathVariable String productId, @RequestParam("images") List<MultipartFile> files){
+
+    }
 }
