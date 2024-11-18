@@ -102,10 +102,8 @@ public class ProductControllers {
     @GetMapping("/status/{status}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> getAllProductForUserBasedOnStatus(@PathVariable String status) {
-        System.out.println("START");
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
         try{
-            System.out.println("HERE");
             List<?> products = productServices.getListOfProductFromStatus(currentUser, status);
 //            TODO: PROVIDE A RESPONSE IF 0 PRODUCTS ARE AVAILABLE
             if(products.isEmpty()){

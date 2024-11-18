@@ -116,7 +116,6 @@ public class ProductServices {
         List<ProductEntity> productWithSameStatus = new ArrayList<ProductEntity>();
 //        TODO: FROM ALL THE PRODUCTS SAVE THE PRODUCTS WITH SAME STATUS INTO ONE LIST AND RETURN IT
         for(Optional<ProductEntity> product : products){
-            System.out.println(product.get().getStatus());
             if(ProductStatusEnum.valueOf(String.valueOf(product.get().getStatus())) == ProductStatusEnum.valueOf(productStatus)){
                 productWithSameStatus.add(product.get());
             }

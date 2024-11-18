@@ -129,6 +129,5 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
             businessProfile.setUser(finduser);
             businessProfileRepository.save(businessProfile);
         }
-
     }
 }
