@@ -1,12 +1,13 @@
 package com.example.project.repositories;
-
+import com.example.project.entities.BusinessProfileEntity;
 import com.example.project.entities.ProductEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository
@@ -24,4 +25,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity, Strin
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice
     );
+
+    Page<ProductEntity> findAllByBusinessProfile(BusinessProfileEntity businessProfile, Pageable pageable);
+
 }

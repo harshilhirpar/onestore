@@ -6,6 +6,8 @@ import com.example.project.dtos.responses.UploadThumbnailResponseDto;
 import com.example.project.entities.BusinessProfileEntity;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
+import com.example.project.enums.LoggerErrorMessages;
+import com.example.project.enums.LoggerInfoMessages;
 import com.example.project.enums.ProductStatusEnum;
 import com.example.project.exceptions.BusinessProfileExceptions;
 import com.example.project.exceptions.ProductExceptions;
@@ -26,8 +28,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServices {
@@ -74,12 +78,13 @@ public class ProductServices {
         return product;
     }
 
-    public List<Optional<ProductEntity>> findAllProductForUser(UserEntity user){
+    public List<ProductEntity> findAllProductForUser(UserEntity user, int page, int size){
         BusinessProfileEntity businessProfile = findBusinessProfile(user);
         logger.info("Attempting to find all products");
-        List<Optional<ProductEntity>> allProducts = productRepository.findAllByBusinessProfile(businessProfile);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ProductEntity> allProducts = productJpaRepository.findAllByBusinessProfile(businessProfile, pageable);
         logger.info("Successfully found all products");
-        return allProducts;
+        return allProducts.getContent();
     }
 
     public ProductEntity findProductById(String productId){
@@ -189,11 +194,11 @@ public class ProductServices {
     }
 
     public UploadMultipleImagesResponseDto uploadSupportingImages(String productId, List<MultipartFile> images) throws IOException {
-        logger.info("Trying to upload product thumbnail images");
+        logger.info(String.valueOf(LoggerInfoMessages.TRY_TO_UPLOAD_THUMBNAIL));
         UploadMultipleImagesResponseDto multipleImagesResponseDto = new UploadMultipleImagesResponseDto();
         ProductEntity product = productRepository.findById(productId).orElse(null);
         if(product == null){
-            logger.error("Product not found, please provide valid productId");
+            logger.error(String.valueOf(LoggerErrorMessages.PRODUCT_NOT_FOUND));
             throw new ProductExceptions("PRODUCT NOT FOUND");
         }
         List<String> imageUrls = new ArrayList<>();
@@ -214,5 +219,31 @@ public class ProductServices {
         multipleImagesResponseDto.setMessage("IMAGES UPLOADED");
         multipleImagesResponseDto.setImageUrls(imageUrls);
         return multipleImagesResponseDto;
+    }
+
+    public ProductEntity updateProductById(String productId, CreateProductDto requestBody){
+        logger.info(String.valueOf(LoggerInfoMessages.TRY_TO_FIND_PRODUCT));
+        ProductEntity product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            logger.error(String.valueOf(LoggerErrorMessages.PRODUCT_NOT_FOUND));
+            throw new ProductExceptions("PRODUCT NOT FOUND");
+        }
+        product.setName(requestBody.getName());
+        product.setDescription(requestBody.getDescription());
+        product.setPrice(requestBody.getPrice());
+        product.setQuantity(requestBody.getQuantity());
+        product.setCategory(requestBody.getCategory());
+        product.setStatus(ProductStatusEnum.valueOf(requestBody.getStatus()));
+
+        logger.info(String.valueOf(LoggerInfoMessages.SAVE_PRODUCT));
+        productRepository.save(product);
+        return product;
+    }
+
+    public List<String> getAllProductStatus(){
+        logger.info(String.valueOf(LoggerInfoMessages.TRY_TO_GET_PRODUCT_STATUS));
+        return Arrays.stream(ProductStatusEnum.values())
+                .map(Enum::name)
+                .toList();
     }
 }

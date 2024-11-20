@@ -10,6 +10,7 @@ import com.example.project.exceptions.GlobalExceptionHandler;
 import com.example.project.exceptions.ProductExceptions;
 import com.example.project.services.ProductServices;
 import com.example.project.utils.GetAuthenticatedUser;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,6 +21,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+
+// THIS CONTROLLER WILL HANDLE BELLOW REQUESTS
+// /ADD PRODUCT
+// /UPDATE PRODUCT
+// /GET PRODUCT BY ID
+// /GET ALL PRODUCTS FOR LOGGED IN USER
+// /GET PAGINATED  PRODUCTS
 @RestController
 @RequestMapping("/product")
 public class ProductControllers {
@@ -53,10 +61,10 @@ public class ProductControllers {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('BUSINESS')")
-    public ResponseEntity<?> getAllUserProducts() {
+    public ResponseEntity<?> getAllUserProducts(@RequestParam int page, @RequestParam int size) {
         UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
         try {
-            List<Optional<ProductEntity>> allProducts = productServices.findAllProductForUser(currentUser);
+            List<ProductEntity> allProducts = productServices.findAllProductForUser(currentUser, page, size);
             return new ResponseEntity<>(allProducts, HttpStatus.OK);
         } catch (Exception e) {
             return globalExceptionHandler.handleGenericExceptions(e);
@@ -168,5 +176,24 @@ public class ProductControllers {
         }catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+//    TODO: UPDATE HANDLER
+    @PutMapping("/update/{productId}")
+    @PreAuthorize("hasAnyRole('BUSINESS')")
+    public ResponseEntity<?> updateProductById(@PathVariable String productId, @RequestBody CreateProductDto requestBody){
+        try{
+            ProductEntity updatedProduct = productServices.updateProductById(productId, requestBody);
+            return new ResponseEntity<>(updatedProduct, HttpStatus.OK);
+        }catch (ProductExceptions ex){
+            return globalExceptionHandler.handleProductNotFound(ex);
+        }
+    }
+
+//    TODO: IMPLEMENT GET ALL PRODUCT STATUS
+    @GetMapping("/status/all")
+    public ResponseEntity<?> getAllProductStatus(){
+        List<String> productStatuses = productServices.getAllProductStatus();
+        return new ResponseEntity<>(productStatuses, HttpStatus.OK);
     }
 }
