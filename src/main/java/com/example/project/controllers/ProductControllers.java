@@ -1,6 +1,8 @@
 package com.example.project.controllers;
 
 import com.example.project.dtos.CreateProductDto;
+import com.example.project.dtos.responses.UploadMultipleImagesResponseDto;
+import com.example.project.dtos.responses.UploadThumbnailResponseDto;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.exceptions.BusinessProfileExceptions;
@@ -14,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -140,13 +143,30 @@ public class ProductControllers {
     @PostMapping("/thumbnail/{productId}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> uploadThumbnail(@PathVariable String productId, @RequestParam("image") MultipartFile file){
-
+        try{
+            UploadThumbnailResponseDto responseDto = productServices.uploadThumbnailImage(productId, file);
+            if(responseDto.getIsError()){
+                return new ResponseEntity<>(responseDto, HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>(responseDto, HttpStatus.OK);
+        }catch (ProductExceptions ex){
+            return globalExceptionHandler.handleProductNotFound(ex);
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     //    TODO: SUPPORT IMAGES UPLOAD
-    @PostMapping("/thumbnail/{productId}")
+    @PostMapping("/supportImages/{productId}")
     @PreAuthorize("hasAnyRole('BUSINESS')")
     public ResponseEntity<?> uploadMultipleImages(@PathVariable String productId, @RequestParam("images") List<MultipartFile> files){
-
+        try{
+            UploadMultipleImagesResponseDto response = productServices.uploadSupportingImages(productId, files);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        }catch (ProductExceptions ex){
+            return globalExceptionHandler.handleProductNotFound(ex);
+        }catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

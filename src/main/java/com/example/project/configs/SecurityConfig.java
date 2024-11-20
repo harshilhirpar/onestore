@@ -31,11 +31,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+        System.out.println("I am here");
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         (authz ->
-                                authz.requestMatchers("/auth/**")
+                                authz.requestMatchers("/auth/**", "/upload/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated()

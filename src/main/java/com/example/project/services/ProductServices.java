@@ -1,6 +1,8 @@
 package com.example.project.services;
 
 import com.example.project.dtos.CreateProductDto;
+import com.example.project.dtos.responses.UploadMultipleImagesResponseDto;
+import com.example.project.dtos.responses.UploadThumbnailResponseDto;
 import com.example.project.entities.BusinessProfileEntity;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
@@ -17,6 +19,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -144,5 +152,67 @@ public class ProductServices {
         Pageable pageable = PageRequest.of(page, size);
         Page<ProductEntity> paginatedProducts = productPagingRepository.findAll(pageable);
         return paginatedProducts.getContent();
+    }
+
+    public UploadThumbnailResponseDto uploadThumbnailImage(String productId, MultipartFile file) throws IOException {
+//        TODO: CHECK IF PRODUCT EXISTS
+        UploadThumbnailResponseDto thumbnailResponseDto = new UploadThumbnailResponseDto();
+        logger.info("Trying to upload product thumbnail image");
+        ProductEntity product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            logger.error("Product not found, please provide valid productId");
+            throw new ProductExceptions("PRODUCT NOT FOUND");
+        }
+//        TODO: CHECK IF PRODUCT IS EXISTS, THEN CHECK THUMBNAIL IS EXISTS
+        if(!(product.getThumbnail().isEmpty())){
+            logger.error("Thumbnail is already exist");
+            thumbnailResponseDto.setIsError(true);
+            thumbnailResponseDto.setMessage("THUMBNAIL ALREADY EXISTS");
+            return thumbnailResponseDto;
+        }
+//        GENERATING FILENAME
+        String filename = "thumbnail_" + productId + "_" + file.getOriginalFilename();
+        Path path = Paths.get(UPLOAD_DIRECTORY + filename);
+        Files.createDirectories(path.getParent());
+        Files.write(path, file.getBytes());
+
+        String imageUrl = "/uploads/" + filename;
+        product.setThumbnail(imageUrl);
+        productRepository.save(product);
+
+//        TODO: FORMATING RESPONSE
+        thumbnailResponseDto.setIsError(false);
+        thumbnailResponseDto.setImageUrl(imageUrl);
+        thumbnailResponseDto.setMessage("IMAGE UPLOADED");
+
+        return thumbnailResponseDto;
+    }
+
+    public UploadMultipleImagesResponseDto uploadSupportingImages(String productId, List<MultipartFile> images) throws IOException {
+        logger.info("Trying to upload product thumbnail images");
+        UploadMultipleImagesResponseDto multipleImagesResponseDto = new UploadMultipleImagesResponseDto();
+        ProductEntity product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            logger.error("Product not found, please provide valid productId");
+            throw new ProductExceptions("PRODUCT NOT FOUND");
+        }
+        List<String> imageUrls = new ArrayList<>();
+        // Save each file and generate URLs
+        for (MultipartFile file : images) {
+            String filename = "image_" + productId + "_" + file.getOriginalFilename();
+            Path path = Paths.get(UPLOAD_DIRECTORY + filename);
+            Files.createDirectories(path.getParent());
+            Files.write(path, file.getBytes());
+
+            String imageUrl = "/uploads/" + filename;
+            imageUrls.add(imageUrl);
+        }
+
+        product.setSupportingImages(imageUrls);
+        productRepository.save(product);
+        multipleImagesResponseDto.setIsError(false);
+        multipleImagesResponseDto.setMessage("IMAGES UPLOADED");
+        multipleImagesResponseDto.setImageUrls(imageUrls);
+        return multipleImagesResponseDto;
     }
 }

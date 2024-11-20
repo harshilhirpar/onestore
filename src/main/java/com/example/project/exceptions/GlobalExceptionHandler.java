@@ -1,5 +1,7 @@
 package com.example.project.exceptions;
 
+import com.example.project.dtos.responses.ExceptionResponseDto;
+import com.example.project.dtos.responses.UploadThumbnailResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,7 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(RoleNotFoundException.class)
+//    @ExceptionHandler(RoleNotFoundException.class)
     public ResponseEntity<String> handleRoleNotFoundException(RoleNotFoundException ex){
         return new ResponseEntity<>(
                 ex.getMessage(),
@@ -65,7 +67,17 @@ public class GlobalExceptionHandler {
     }
 
 //    @ExceptionHandler(ProductExceptions.class)
-    public ResponseEntity<?> handleProductNotFound(ProductExceptions ex) {
+    public ResponseEntity<ExceptionResponseDto> handleProductNotFound(ProductExceptions ex) {
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage("PRODUCT NOT FOUND");
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public ResponseEntity<?> handleProductThumbnailAlreadyExist(ProductExceptions ex){
         return new ResponseEntity<>(
                 ex.getMessage(),
                 HttpStatus.BAD_REQUEST

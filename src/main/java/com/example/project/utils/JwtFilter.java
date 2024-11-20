@@ -1,10 +1,9 @@
 package com.example.project.utils;
-
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,13 +13,13 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
-
 import java.io.IOException;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
     private final HandlerExceptionResolver handlerExceptionResolver;
+    private static final Logger logger = GlobalLogger.getLogger(JwtFilter.class);
 
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
@@ -41,7 +40,14 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
+        String requestPath = request.getRequestURI();
+        if(requestPath.startsWith("/auth/")){
+            logger.info("AUTH REQUEST DO NOT VALIDATE");
+            filterChain.doFilter(request, response); // Proceed without filtering
+            return;
+        }
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.info("AUTH HEADER IS EMPTY");
             filterChain.doFilter(request, response);
             return;
         }
