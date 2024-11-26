@@ -2,6 +2,7 @@ package com.example.project.controllers;
 
 import com.example.project.dtos.CreateCustomerProfileDto;
 import com.example.project.dtos.responses.CustomerProfileResponseDto;
+import com.example.project.entities.CartEntity;
 import com.example.project.entities.CustomerProfileEntity;
 import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
@@ -96,5 +97,55 @@ public class CustomerProfileControllers {
 //    TODO: SEE PARTICULAR PRODUCTS
     @GetMapping("/products/{productId}")
     @PreAuthorize("hasAnyRole('CUSTOMER')")
-    public void getProductByIdForCustomer(){}
+    public ResponseEntity<?> getProductByIdForCustomer(@PathVariable String productId){
+        try{
+           ProductEntity product = customerProfileServices.getProductFromId(productId);
+           return new ResponseEntity<>(product, HttpStatus.FOUND);
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+    @GetMapping("/product/add/{productId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> addToCartProduct(@PathVariable String productId){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            CartEntity cart = customerProfileServices.addToCart(currentUser.getId(), productId);
+            return new ResponseEntity<>(cart, HttpStatus.CREATED);
+        }catch(NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+    @GetMapping("/product/increase/quantity/{productId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> increaseQuantityInCart(@PathVariable String productId){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            CartEntity cart = customerProfileServices.increaseQuantityInCart(currentUser.getId(), productId);
+            return new ResponseEntity<>(cart, HttpStatus.CREATED);
+
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+    @GetMapping("/product/decrease/quantity/{productId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> decreaseQuantityInCart(@PathVariable String productId){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            CartEntity cart = customerProfileServices.decreaseQuantityInCart(currentUser.getId(), productId);
+            return new ResponseEntity<>(cart, HttpStatus.CREATED);
+
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+//    TODO: IMPLEMENT ADD TO CART
+//    TODO: INCREASE QUANTITY OF PRODUCT IN CART
+//    TODO: GET ALL PRODUCTS FROM CART
+//    TODO: REMOVE PRODUCT FROM CART
 }
