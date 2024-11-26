@@ -1,9 +1,11 @@
 package com.example.project.utils;
 
 import com.example.project.entities.BusinessProfileEntity;
+import com.example.project.entities.ProductEntity;
 import com.example.project.entities.RoleEntity;
 import com.example.project.entities.UserEntity;
 import com.example.project.enums.BusinessStatus;
+import com.example.project.enums.ProductStatusEnum;
 import com.example.project.enums.RoleEnum;
 import com.example.project.repositories.BusinessProfileRepository;
 import com.example.project.repositories.ProductRepository;
@@ -14,9 +16,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
@@ -46,6 +46,7 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
         this.loadRoles();
         this.loadUsers();
         this.loadBusinessProfile();
+//        this.addProducts();
     }
 
     private void loadUsers(){
@@ -129,5 +130,40 @@ public class Seeder implements ApplicationListener<ContextRefreshedEvent> {
             businessProfile.setUser(finduser);
             businessProfileRepository.save(businessProfile);
         }
+    }
+
+    private void addProducts(){
+        List<ProductEntity> productEntities = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for(int i=0; i<100; i++){
+            String name = "TP" + i;
+            names.add(name);
+        }
+
+        for (String name : names) {
+            ProductEntity product = createProduct(name);
+            System.out.println("product Created");
+            productRepository.save(product);
+        }
+    }
+
+    private ProductEntity createProduct(String name){
+        UserEntity finduser = userRepository.findByEmail("jainam@gmail.com").orElse(null);
+        if(finduser == null){
+            System.out.println("USER NOT FOUND");
+        }
+        BusinessProfileEntity businessProfile = businessProfileRepository.findByUser(finduser).orElse(null);
+        if(businessProfile == null){
+            System.out.println("BUSINESS PROFILE NOT FOUND");
+        }
+        ProductEntity product = new ProductEntity();
+        product.setName(name);
+        product.setDescription("TEST DESC");
+        product.setPrice(69.99);
+        product.setQuantity(154);
+        product.setCategory("ELECTRONICS");
+        product.setStatus(ProductStatusEnum.valueOf("ACTIVE"));
+        product.setBusinessProfile(businessProfile);
+        return product;
     }
 }

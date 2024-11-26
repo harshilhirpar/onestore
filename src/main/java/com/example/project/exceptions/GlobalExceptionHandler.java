@@ -1,10 +1,9 @@
 package com.example.project.exceptions;
 
 import com.example.project.dtos.responses.ExceptionResponseDto;
-import com.example.project.dtos.responses.UploadThumbnailResponseDto;
+import com.example.project.enums.ErrorMessagesEnum;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
@@ -59,9 +58,12 @@ public class GlobalExceptionHandler {
     }
 
 //    @ExceptionHandler(BusinessProfileExceptions.class)
-    public ResponseEntity<String> handleBusinessProfileAlreadyExists(BusinessProfileExceptions ex){
+    public ResponseEntity<ExceptionResponseDto> handleBusinessProfileAlreadyExists(BusinessProfileExceptions ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(String.valueOf(ErrorMessagesEnum.BUSINESS_PROFILE_ALREADY_EXISTS));
         return new ResponseEntity<>(
-                ex.getMessage(),
+                responseDto,
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -70,10 +72,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ExceptionResponseDto> handleProductNotFound(ProductExceptions ex) {
         ExceptionResponseDto responseDto = new ExceptionResponseDto();
         responseDto.setIsError(true);
-        responseDto.setMessage("PRODUCT NOT FOUND");
+        responseDto.setMessage(String.valueOf(ErrorMessagesEnum.PRODUCT_NOT_FOUND));
         return new ResponseEntity<>(
                 responseDto,
                 HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public ResponseEntity<ExceptionResponseDto> handleCustomerProfileNotFound(CustomerProfileNotFoundException ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.NOT_FOUND
         );
     }
 
@@ -81,6 +93,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(
                 ex.getMessage(),
                 HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public ResponseEntity<?> handleAlreadyExistException(AlreadyExistsExceptions ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public ResponseEntity<?> handleNotFoundException(NotFoundException ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.NOT_FOUND
         );
     }
 }

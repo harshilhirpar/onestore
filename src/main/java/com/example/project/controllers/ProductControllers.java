@@ -26,6 +26,7 @@ import java.util.List;
 // /GET PRODUCT BY ID
 // /GET ALL PRODUCTS FOR LOGGED IN USER
 // /GET PAGINATED  PRODUCTS
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/product")
 public class ProductControllers {
