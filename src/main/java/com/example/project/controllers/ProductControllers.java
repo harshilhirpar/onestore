@@ -134,7 +134,6 @@ public class ProductControllers {
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice) {
-        System.out.println("dnsvsjkdnvfnahfdnvdsfhjvfdnviufnvijf");
         List<ProductEntity> products = productServices.searchProducts(keyword, category, minPrice, maxPrice);
         return new ResponseEntity<>(products, HttpStatus.OK);
     }

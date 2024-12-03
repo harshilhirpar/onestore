@@ -36,7 +36,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         (authz ->
-                                authz.requestMatchers("/auth/**", "/upload/**", "/seed/**")
+                                authz.requestMatchers("/auth/**", "/upload/**", "/seed/**", "/payment/**", "/image/**")
                                         .permitAll()
                                         .anyRequest()
                                         .authenticated()
@@ -50,7 +50,7 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
         configuration.setAllowedMethods(List.of("GET","POST"));
         configuration.setAllowedHeaders(List.of("Authorization","Content-Type"));
 

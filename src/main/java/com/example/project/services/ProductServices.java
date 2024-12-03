@@ -52,7 +52,7 @@ public class ProductServices {
         this.productJpaRepository = productJpaRepository;
         this.productPagingRepository = productPagingRepository;
     }
-    private final String UPLOAD_DIRECTORY = "uploads/";
+    private final String UPLOAD_DIRECTORY = "src/main/resources/static/image/";
 
     public ProductEntity createProduct(UserEntity user, CreateProductDto createProductDto){
 //        TODO: FIND THE BUSINESS PROFILE BECAUSE IT IS LINKED WITH PRODUCTS
@@ -180,7 +180,7 @@ public class ProductServices {
         Files.createDirectories(path.getParent());
         Files.write(path, file.getBytes());
 
-        String imageUrl = "/uploads/" + filename;
+        String imageUrl = "http://localhost:3000/image/" + filename;
         product.setThumbnail(imageUrl);
         productRepository.save(product);
 
@@ -208,7 +208,7 @@ public class ProductServices {
             Files.createDirectories(path.getParent());
             Files.write(path, file.getBytes());
 
-            String imageUrl = "/uploads/" + filename;
+            String imageUrl = "http://localhost:3000/image/" + filename;
             imageUrls.add(imageUrl);
         }
 

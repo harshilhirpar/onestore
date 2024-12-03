@@ -1,6 +1,9 @@
 package com.example.project.services;
 
 import com.example.project.dtos.CreateCustomerProfileDto;
+import com.example.project.dtos.ProductsInCartDto;
+import com.example.project.dtos.responses.ProductInCartResponseDto;
+import com.example.project.dtos.responses.ReviewCartResponseDto;
 import com.example.project.entities.CartEntity;
 import com.example.project.entities.CustomerProfileEntity;
 import com.example.project.entities.ProductEntity;
@@ -15,6 +18,7 @@ import com.example.project.utils.GlobalLogger;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -24,6 +28,7 @@ public class CustomerProfileServices {
     private final ProductRepository productRepository;
     private final CartRepository cartRepository;
     private static final Logger logger = GlobalLogger.getLogger(CustomerProfileServices.class);
+    private final Double TAX_AMOUNT = 13.0;
 
     public CustomerProfileServices(
             CustomerProfileRepository customerProfileRepository,
@@ -122,6 +127,7 @@ public class CustomerProfileServices {
 //    TODO: NEED PRODUCT ID
 //    TODO: NEED QUANTITY
     public CartEntity addToCart(String userId, String productId){
+//        CHECK IF PRODUCT IS ALREADY ADDED TO CART
         logger.info("Trying to add product to cart");
         logger.info("Check if product exists");
         ProductEntity product = productRepository.findById(productId).orElse(null);
@@ -130,6 +136,12 @@ public class CustomerProfileServices {
             throw new NotFoundException("Product Not Found");
         }
         logger.info("Product found to add in cart with id: {}", productId);
+        logger.info("Check if product is already added to cart by user");
+        CartEntity isInCart = cartRepository.findByUserIdAndProductId(userId, productId).orElse(null);
+        if(isInCart != null){
+            logger.error("Product is already added in cart by user");
+            throw new AlreadyExistsExceptions("Product Already Exists in Cart");
+        }
         CartEntity cartEntity = new CartEntity();
         cartEntity.setUserId(userId);
         cartEntity.setProductId(productId);
@@ -175,4 +187,95 @@ public class CustomerProfileServices {
         cart.setQuantity(quantity - 1);
         return cartRepository.save(cart);
     }
+
+//    TODO: GET ALL PRODUCTS FROM CART
+    public List<ProductInCartResponseDto> getAllProductsFromCart(String userId){
+        logger.info("Trying to find all products in cart");
+        List<CartEntity> cartProducts = cartRepository.findAllByUserId(userId).orElse(null);
+        if(cartProducts == null){
+            logger.info("No item found in cart");
+            throw new NotFoundException("There are no items in your cart");
+        }
+        List<ProductInCartResponseDto> productsInCart = new ArrayList<>();
+        for(CartEntity cartProduct: cartProducts){
+            ProductEntity product = productRepository.findById(cartProduct.getProductId()).orElse(null);
+            if(product == null){
+                throw new NotFoundException("Product Not Found, Something Went Wrong");
+            }
+            ProductInCartResponseDto productInCart = new ProductInCartResponseDto();
+            productInCart.setError(false);
+            productInCart.setQuantityInCart(cartProduct.getQuantity());
+            productInCart.setProduct(product);
+            productsInCart.add(productInCart);
+        }
+        return productsInCart;
+    }
+
+    public String removeProductFromCart(String userId, String productId){
+        logger.info("Trying to remove product from cart");
+        logger.info("Check if product exists");
+        ProductEntity product = productRepository.findById(productId).orElse(null);
+        if(product == null){
+            logger.info("Product not found with id: {}", productId);
+            throw new NotFoundException("Product Not Found");
+        }
+        logger.info("Check if product is already added to cart by user");
+        CartEntity isInCart = cartRepository.findByUserIdAndProductId(userId, productId).orElse(null);
+        if(isInCart == null){
+            logger.error("Product is not in cart");
+            throw new NotFoundException("Product Not Exists in Cart");
+        }
+        cartRepository.delete(isInCart);
+        return "Product Deleted";
+    }
+
+    public ReviewCartResponseDto reviewCart(String userId){
+        logger.info("Trying to get review cart");
+        List<CartEntity> cartProducts = cartRepository.findAllByUserId(userId).orElse(null);
+        assert cartProducts != null;
+        if(cartProducts.isEmpty()){
+            logger.error("No Products found in cart");
+            throw new NotFoundException("There are not products in cart");
+        }
+//        Product in cart found, now calculate total
+        double total = 0.0;
+        double totalWithTax = 0.0;
+        List<ProductsInCartDto> productsInCart = new ArrayList<>();
+        for(CartEntity cartProduct: cartProducts){
+//            Find the product
+            ProductEntity productInCart = productRepository.findById(cartProduct.getProductId()).orElse(null);
+            if(productInCart == null){
+                logger.error("Product not found");
+                throw new NotFoundException("Product Not Found, Something went Wrong");
+            }
+//            Set Product and Quantity for response
+            ProductsInCartDto products = new ProductsInCartDto();
+            products.setProduct(productInCart);
+            products.setQuantityInCart(cartProduct.getQuantity());
+            productsInCart.add(products);
+//            Calculate price
+            Integer quantity = cartProduct.getQuantity();
+            Double price = productInCart.getPrice();
+            total = calculateTotal(quantity, price) + total;
+        }
+        totalWithTax = calculateTotalWithTax(total);
+//        Now we have everything, wrap into response object
+        ReviewCartResponseDto reviewCartResponse = new ReviewCartResponseDto();
+        reviewCartResponse.setError(false);
+        reviewCartResponse.setMessage("Review Your Cart");
+        reviewCartResponse.setProductsInCart(productsInCart);
+        reviewCartResponse.setTotalAmount(total);
+        reviewCartResponse.setTotalWithTax(totalWithTax);
+//        There are lots of other conditions which needs to implemented like, discount, coupon.
+        return reviewCartResponse;
+    }
+
+    public double calculateTotal(Integer quantity, Double price){
+        return quantity*price;
+    }
+
+    public double calculateTotalWithTax(double total){
+        return ((total*TAX_AMOUNT)/100) + total;
+    }
+
 }

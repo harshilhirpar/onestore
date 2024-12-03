@@ -2,6 +2,8 @@ package com.example.project.controllers;
 
 import com.example.project.dtos.CreateCustomerProfileDto;
 import com.example.project.dtos.responses.CustomerProfileResponseDto;
+import com.example.project.dtos.responses.ProductInCartResponseDto;
+import com.example.project.dtos.responses.ReviewCartResponseDto;
 import com.example.project.entities.CartEntity;
 import com.example.project.entities.CustomerProfileEntity;
 import com.example.project.entities.ProductEntity;
@@ -115,6 +117,8 @@ public class CustomerProfileControllers {
             return new ResponseEntity<>(cart, HttpStatus.CREATED);
         }catch(NotFoundException ex){
             return globalExceptionHandler.handleNotFoundException(ex);
+        }catch (AlreadyExistsExceptions ex){
+            return globalExceptionHandler.handleAlreadyExistException(ex);
         }
     }
 
@@ -144,8 +148,39 @@ public class CustomerProfileControllers {
         }
     }
 
-//    TODO: IMPLEMENT ADD TO CART
-//    TODO: INCREASE QUANTITY OF PRODUCT IN CART
-//    TODO: GET ALL PRODUCTS FROM CART
-//    TODO: REMOVE PRODUCT FROM CART
+    @GetMapping("/product/cart")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> getAllProductsInCart(){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            List<ProductInCartResponseDto> cartEntities = customerProfileServices.getAllProductsFromCart(currentUser.getId());
+            return new ResponseEntity<>(cartEntities, HttpStatus.FOUND);
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+    @DeleteMapping("/product/cart/remove/{productId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> removeProductFromCart(@PathVariable String productId){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            String isDeleted = customerProfileServices.removeProductFromCart(currentUser.getId(), productId);
+            return new ResponseEntity<>(isDeleted, HttpStatus.OK);
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
+
+    @GetMapping("/product/cart/review")
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public ResponseEntity<?> reviewCart(){
+        UserEntity currentUser = GetAuthenticatedUser.getAuthenticatedUser();
+        try{
+            ReviewCartResponseDto reviewCart = customerProfileServices.reviewCart(currentUser.getId());
+            return new ResponseEntity<>(reviewCart, HttpStatus.OK);
+        }catch (NotFoundException ex){
+            return globalExceptionHandler.handleNotFoundException(ex);
+        }
+    }
 }
