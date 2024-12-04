@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         String requestPath = request.getRequestURI();
-        if(requestPath.startsWith("/auth/")){
+        if(requestPath.startsWith("/auth/") || requestPath.startsWith("/payment")){
             logger.info("AUTH REQUEST DO NOT VALIDATE");
             filterChain.doFilter(request, response); // Proceed without filtering
             return;
@@ -52,6 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
         try {
+            System.out.println("I AM HERE ----->");
             final String jwt = authHeader.substring(7);
             final String userEmail = jwtService.extractUsername(jwt);
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

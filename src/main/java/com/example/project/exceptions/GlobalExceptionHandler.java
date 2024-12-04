@@ -42,9 +42,12 @@ public class GlobalExceptionHandler {
     }
 
 //    @ExceptionHandler(UserExceptions.class)
-    public ResponseEntity<String> handleUserAlreadyException(UserExceptions ex){
+    public ResponseEntity<ExceptionResponseDto> handleUserAlreadyException(UserExceptions ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
         return new ResponseEntity<>(
-                ex.getMessage(),
+                responseDto,
                 HttpStatus.BAD_REQUEST
         );
     }

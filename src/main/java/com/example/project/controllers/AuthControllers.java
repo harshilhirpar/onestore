@@ -3,6 +3,7 @@ package com.example.project.controllers;
 import com.example.project.dtos.LoginResponseDto;
 import com.example.project.dtos.LoginUserDto;
 import com.example.project.dtos.RegisterUserDto;
+import com.example.project.dtos.responses.RegisterUserResponseDto;
 import com.example.project.entities.UserEntity;
 import com.example.project.exceptions.GlobalExceptionHandler;
 import com.example.project.exceptions.RoleNotFoundException;
@@ -35,9 +36,13 @@ public class AuthControllers {
     public ResponseEntity<?> registerUser(@RequestBody RegisterUserDto registerUserDto) {
         logger.info("Received request to register user with email: {}", registerUserDto.getEmail());
         try {
+            RegisterUserResponseDto responseDto = new RegisterUserResponseDto();
             UserEntity registeredUser = authServices.registerUserService(registerUserDto);
             logger.info("User registered successfully with email: {}", registeredUser.getEmail());
-            return new ResponseEntity<>(registeredUser, HttpStatus.CREATED);
+            responseDto.setError(false);
+            responseDto.setMessage("User Registered Successfully");
+            responseDto.setData(registeredUser);
+            return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
         } catch (RoleNotFoundException ex) {
             return globalExceptionHandler.handleRoleNotFoundException(ex);
         } catch (UserExceptions ex) {
