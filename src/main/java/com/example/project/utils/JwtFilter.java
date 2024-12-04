@@ -41,7 +41,7 @@ public class JwtFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         String requestPath = request.getRequestURI();
-        if(requestPath.startsWith("/auth/") || requestPath.startsWith("/payment")){
+        if(requestPath.startsWith("/auth/")){
             logger.info("AUTH REQUEST DO NOT VALIDATE");
             filterChain.doFilter(request, response); // Proceed without filtering
             return;

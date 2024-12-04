@@ -118,4 +118,24 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND
         );
     }
+
+    public ResponseEntity<?> handleSomethingWentWrongException(SomethingWentWrongException ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    public ResponseEntity<?> handlePaymentExceptions(PaymentExceptions ex){
+        ExceptionResponseDto responseDto = new ExceptionResponseDto();
+        responseDto.setIsError(true);
+        responseDto.setMessage(ex.getMessage());
+        return new ResponseEntity<>(
+                responseDto,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }
