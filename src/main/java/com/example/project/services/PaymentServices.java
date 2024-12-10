@@ -15,8 +15,6 @@ import com.example.project.repositories.UserPurchaseRepository;
 import com.example.project.utils.GlobalLogger;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.*;
 
