@@ -94,10 +94,13 @@ public class PaymentServices {
         List<ProductsInCartDto> productsInCart = reviewCartResponse.getProductsInCart();
         for (ProductsInCartDto product: productsInCart){
             logger.info("Payment: Trying to save product that is purchased DB.");
+            BusinessProfileEntity businessProfile = product.getProduct().getBusinessProfile();
+            String businessProfileId = businessProfile.getId();
             UserPurchasesEntity userPurchases = new UserPurchasesEntity();
             userPurchases.setUserId(user.getId());
             userPurchases.setProductId(product.getProduct().getId());
             userPurchases.setQuantity(product.getQuantityInCart());
+            userPurchases.setBusinessProfileId(businessProfileId);
             userPurchaseRepository.save(userPurchases);
             logger.info("Payment: Trying to update stock in DB for product that is purchased");
             ProductEntity purchasedProduct = product.getProduct();

@@ -29,6 +29,9 @@ public class UserPurchasesEntity {
     private String productId;
 
     @Column(nullable = false)
+    private String businessProfileId;
+
+    @Column(nullable = false)
     private Integer quantity;
 
     @CreationTimestamp
