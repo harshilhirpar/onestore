@@ -1,10 +1,5 @@
 package com.example.project.controllers;
-
-import com.example.project.dtos.responses.SoldProductDto;
-import com.example.project.dtos.responses.SoldProductsResponseDto;
-import com.example.project.entities.ProductEntity;
 import com.example.project.entities.UserEntity;
-import com.example.project.entities.UserPurchasesEntity;
 import com.example.project.exceptions.GlobalExceptionHandler;
 import com.example.project.exceptions.NotFoundException;
 import com.example.project.services.BusinessProfileActivitiesServices;

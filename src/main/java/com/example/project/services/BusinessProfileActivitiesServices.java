@@ -67,6 +67,5 @@ public class BusinessProfileActivitiesServices {
         soldProductsResponseDto.setError(false);
         soldProductsResponseDto.setSoldProducts(listOfSoldProducts);
         return soldProductsResponseDto;
-
     }
 }
