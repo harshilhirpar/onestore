@@ -1,0 +1,52 @@
+==> Configuration 
+--> in spring objects are called beans
+--> Configuration is just a way to tell spring what to do, what objects to create and how they should behave.
+
+==> Beans
+--> just a regular object mapped by Spring.
+--> Object is managed by spring boot so do not need to create everytime, you can directly use that object wherever you need.
+
+==> Spring Container
+--> Container is what Spring uses to hold and manage all the beans.
+
+==> Configuration class
+--> If class is defined as a @Configuration it means you can now define bean inside of it.
+
+--> Spring enables you to build applications from "Plain old Java objects" (POJOs)
+
+==> Dependency Injection
+--> Dependency Injection is a design pattern used to remove tight coupling between objects.
+--> You opena pizza shop. You need
+A dough supplier
+A sauce supplier
+A cheese supplier
+Now you have two option
+1. Create all the ingredients yourself(bad idea)
+2. Ask someone to bring you the ingredients (DI - better idea)
+--> Why do we use DI?
+1. More Flexible Code
+2. Easier to Manage: Spring handles object creation, so you can focus on business logic.
+
+==> Inversion of Control
+--> Instead of creating and managing objects yourself, you let Spring do it fo you.
+--> In simple way "IoC is the principle, and DI is how Spring does it".
+
+==> Aspect Oriented Programming
+--> AOP is a way to separate common behaviors (like logging, security, transactions) from your main business logic.
+
+--> Aspect: The common logic you want to apply everywhere
+--> Advice:  The actual action to perform
+--> Join Point: A place in the code where you can apply the advice
+--> Pointcut: A rule that tells where the advice should be applied
+--> Weaving: Connecting the aspect with your actual code (Done by spring at runtime)
+
+--> Comomn Uses of AOP
+1. Logging
+2. Security checks (ex: role-based access)
+3. Transaction management
+4. Caching
+5. Performance monitoring
+
+
+
+ 
